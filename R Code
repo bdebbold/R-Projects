@@ -1,0 +1,177 @@
+install.packages("KMsurv")
+library("KMsurv")
+library(survival)
+hiv<-read.table(file.choose(),header=TRUE)
+load("C:/Users/Brett/Documents/Classwork/pstat 171/actg320.dat.txt")
+hivf<-survfit(Surv(hiv$time,hiv$censor)~1,data=hiv,type="kaplan-meier")
+plot(hivf, main= "Kaplan-Meier Estimate", ylab = "Survival Probability", xlab = "Days")
+
+
+drug1 <- hiv[which(hiv$txgrp==1),]
+drug2 <- hiv[which(hiv$txgrp==2),]
+#drug3 <- hiv[which(hiv$txgrp==3),]
+#drug4 <- hiv[which(hiv$txgrp==4),]
+drug1
+
+
+hiv$fac<-as.factor(as.numeric(hiv$txgrp==1))
+length(hiv$fac)
+drug1surv <- survfit(Surv(drug1$time, drug1$censor)~ 1, type="kaplan-meier", data=hiv)
+drug2surv <- survfit(Surv(drug2$time, drug2$censor)~ 1, type="kaplan-meier", data=hiv)
+#drug3surv <- survfit(Surv(drug3$time, drug3$censor)~ 1, type="kaplan-meier", data=hiv)
+#drug4surv <- survfit(Surv(drug4$time, drug4$censor)~ 1, type="kaplan-meier", data=hiv)
+plot(drug1surv,col="red", conf.int= FALSE, main = "Survival of Drug Combinations 1 vs 2", xlab="time", ylab = "survival")
+
+
+
+lines(drug2surv,conf.int= FALSE, col="blue")
+## lines(drug3surv, col="green")
+## lines(drug4surv, col="black")
+legend(locator(1), legend=c('Drug 1: ZDV + 3TC', 'Drug 2: ZDV + 3TC + IDV'), col=c(2,4), lwd=c(1,1,1))
+#drug1=red drug2=blue
+
+
+
+fit.drug1surv <- coxph(formula=Surv(drug1$time, drug1$censor)~ 1,  data=hiv)
+fit.drug2surv <- coxph(formula=Surv(drug2$time, drug2$censor)~ 1,  data=hiv)
+
+
+
+hiv.cox <- coxph(Surv(time,censor)~ cd4+age, data=hiv)
+hiv.cox
+
+LRT.drug1= fit.drug1surv$loglik[2]
+LRT.drug1
+LRT.drug2= fit.drug2surv$loglik[2]
+LRT.drug2
+2*(fit.age4$loglik[2] - fit.cd4$loglik[2])
+
+
+
+
+#model 1
+fit.sex <- coxph(formula=Surv(time, censor)~sex, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.raceth <- coxph(formula=Surv(time, censor)~raceth, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.ivdrug <- coxph(formula=Surv(time, censor)~ivdrug, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.hemophil <- coxph(formula=Surv(time, censor)~hemophil, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.karnof2 <- coxph(formula=Surv(time, censor)~karnof, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.cd4 <- coxph(formula=Surv(time, censor)~cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.priorcdv <- coxph(formula=Surv(time, censor)~priorzdv, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.age <- coxph(formula=Surv(time, censor)~age, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+#likelihood for model 1
+fit.sex$loglik[2]
+#-658.4022
+fit.raceth$loglik[2]
+#-658.0422
+fit.ivdrug$loglik[2]
+#-657.4141
+fit.hemophil$loglik[2]
+#-658.4419
+fit.cd4$loglik[2]
+#-626.5953 WHICH MAKES THIS THE MOST SIGNIFICANT!!!
+fit.priorcdv$loglik[2]
+#-658.2115
+fit.age$loglik[2]
+#-656.7478
+
+#model 2
+fit.sex4 <- coxph(formula=Surv(time, censor)~sex+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.raceth4 <- coxph(formula=Surv(time, censor)~raceth+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.ivdrug4 <- coxph(formula=Surv(time, censor)~ivdrug+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.hemophil4 <- coxph(formula=Surv(time, censor)~hemophil+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.priorcdv4 <- coxph(formula=Surv(time, censor)~priorzdv+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.age4 <- coxph(formula=Surv(time, censor)~age+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+#likelihood model 2
+fit.sex4$loglik[2]
+#-626.5949
+fit.raceth4$loglik[2]
+#-626.5332
+fit.ivdrug4$loglik[2]
+#-625.6829
+fit.hemophil4$loglik[2]
+#-626.573
+fit.priorcdv4$loglik[2]
+#-626.5953
+fit.age4$loglik[2]
+#-623.7866 Thus CD4 and Age are the biggest covariants in determining the beter model 
+
+2*(fit.age4$loglik[2] - fit.cd4$loglik[2])
+#5.61734
+1-pchisq(5.61734,1)
+#p-value: 0.01778362 
+
+#model 3
+fit.sex5 <- coxph(formula=Surv(time, censor)~sex+age+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.raceth5 <- coxph(formula=Surv(time, censor)~raceth+age+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.ivdrug5 <- coxph(formula=Surv(time, censor)~ivdrug+age+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.hemophil5 <- coxph(formula=Surv(time, censor)~hemophil+age+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+
+#likelihood model 3
+fit.sex5$loglik[2]
+#-623.7443
+fit.raceth5$loglik[2]
+#-623.6488
+fit.ivdrug5$loglik[2]
+#-622.594
+fit.hemophil5$loglik[2]
+#-623.7865
+
+
+fit.priorcdv5$loglik[2]
+#-623.7648
+fit.priorcdv5 <- coxph(formula=Surv(time, censor)~priorzdv+age+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+2*(fit.ivdrug5$loglik[2] - fit.age4$loglik[2])
+#2.385232
+1-pchisq(2.385232,1)
+#p-value: 0.1224867
+
+fit.model = coxph(Surv(time,censor)~strat2+sex+raceth+ivdrug+hemophil+cd4+priorzdv+age,data=hiv)
+summary(fit.model)
+
+age.less = hiv[which(hiv$age<38),]
+age.greater = hiv[which(hiv$age>=38),]
+fit.age.less = survfit(Surv(time,censor)~strat2,data=age.less)
+plot(fit.age.less,col=c(2,4),xlab="time",ylab="survival",main="Age<38")
+legend(locator(1),legend=c('CD4 count <= 50', 'CD4 count > 50'),col=c(2,4),lwd=c(1,1,1))
+fit.age.greater = survfit(Surv(time,censor)~strat2,data=age.greater)
+plot(fit.age.greater, col=c(2,4),xlab="time",ylab="survival",main="Age>=38")
+legend(locator(1),legend=c('CD4 count <= 50', 'CD4 count > 50'),col=c(2,4),lwd=c(1,1,1))
+
+
+fit.model3 = coxph(Surv(time,censor)~strata(cd4)+age,data=hiv)
+summary(fit.model3)
+fit.model3$loglik[2]
+
+#interaction?
+fit.model4 = coxph(formula=Surv(time,censor)~cd4*age,data= hiv)
+summary(fit.model4)
+
+fit.priorcdv5 <- coxph(formula=Surv(time, censor)~priorzdv+age+cd4, data= hiv, subset= !is.na(hiv$sex)&!is.na(hiv$raceth)&!is.na(hiv$ivdrug)&!is.na(hiv$hemophil)&!is.na(hiv$karnof)&!is.na(hiv$cd4)&!is.na(hiv$priorzdv)&!is.na(hiv$age))
+fit.age.less2 = coxph(formula=Surv(time,censor)~strat2,data=age.less)
+fit.age.greater2 = coxph(formula= Surv(time,censor)~strat2,data=age.greater)
+
+LRT<-2*(fit.age.greater2$loglik[2]-fit.age.less$loglik[2])
+LRT
+#-161.1139
+pchisq(-161.1139,2)
+
+
+
+
+
+
+
+## straitification
+plot(survfit(Surv(V2,V3)~V8,data=hiv),lwd=2,col=c(2,4), xlab='time')
+coxph(Surv(V2,V3)~V16 + V8,data=hiv)
+coxph(Surv(V2,V3)~V16 + strata(V8),data=hiv)
+fit.new <- coxph(Surv(V2,V3)~V16 + strata(V8),data=hiv)
+plot(survfit(fit.new,data.frame(V16=c(38))),lwd=2,col=c(2,4),lty=c(1,1),mark.time=FALSE, xlab="time",ylab="S(t)")
+fit.1 <- coxph(Surv(V2,V3)~V16,data=hiv,subset=(V8 == "1"))
+fit.0 <- coxph(Surv(V2,V3)~V16,data=hiv,subset=(V8 == "0"))
+plot(survfit(fit.1,data.frame(V16=c(30,55,70))),lwd=2,col=c(2,4,3),xlab="time",ylab="survival",main="CD4 > 50")
+legend(locator(1), legend=c('Age = 30', 'Age = 55', 'Age = 70'), col=c(2,4,3), lwd=c(1,1,1))
+
+plot(survfit(fit.0,data.frame(V16=c(30,55,70))),lwd=2,col=c(2,4,3),xlab="time",ylab="survival",main="CD4 <= 50")
+
+
